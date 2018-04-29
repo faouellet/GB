@@ -7,4 +7,4 @@ enable_testing()
 add_subdirectory(core)
 add_subdirectory(test)
 
-add_executable(gb main.cpp)
+add_executable(gb main.cpp core)
