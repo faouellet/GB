@@ -1,6 +1,8 @@
 #pragma once
 
-#include <cstdint>
+#include "memory.h"
+
+#include <functional>
 
 class CPU
 {
@@ -9,6 +11,8 @@ public:
 
     void ExecuteNextInstruction();
 
+private:
+    void InitCommands();
 
 private:
     union
@@ -34,4 +38,7 @@ private:
         uint8_t H : 1;
         uint8_t C : 1;
     } m_FR;
+
+    Memory m_mem;
+    std::array<std::function<void()>, 256> m_commands;
 };
