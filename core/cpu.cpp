@@ -6,7 +6,7 @@ CPU::CPU() : m_PC{0x100} { }
 
 void CPU::ExecuteNextInstruction()
 {
-    uint8_t opcode;
+    uint8_t opcode = m_mem.Read(++m_PC);
     
     switch(opcode)
     {
@@ -16,7 +16,7 @@ void CPU::ExecuteNextInstruction()
         case 0x03: [](){}; break;
         case 0x04: [](){}; break;
         case 0x05: [](){}; break;
-        case 0x06: [](){}; break;
+        case 0x06: LD<B>(); break;
         case 0x07: [](){}; break;
         case 0x08: [](){}; break;
         case 0x09: [](){}; break;
@@ -24,7 +24,7 @@ void CPU::ExecuteNextInstruction()
         case 0x0B: [](){}; break;
         case 0x0C: [](){}; break;
         case 0x0D: [](){}; break;
-        case 0x0E: [](){}; break;
+        case 0x0E: LD<C>(); break;
         case 0x0F: [](){}; break;
 
         case 0x10: [](){}; break;
@@ -33,7 +33,7 @@ void CPU::ExecuteNextInstruction()
         case 0x13: [](){}; break;
         case 0x14: [](){}; break;
         case 0x15: [](){}; break;
-        case 0x16: [](){}; break;
+        case 0x16: LD<D>(); break;
         case 0x17: [](){}; break;
         case 0x18: [](){}; break;
         case 0x19: [](){}; break;
@@ -41,7 +41,7 @@ void CPU::ExecuteNextInstruction()
         case 0x1B: [](){}; break;
         case 0x1C: [](){}; break;
         case 0x1D: [](){}; break;
-        case 0x1E: [](){}; break;
+        case 0x1E: LD<E>(); break;
         case 0x1F: [](){}; break;
 
         case 0x20: [](){}; break;
@@ -50,7 +50,7 @@ void CPU::ExecuteNextInstruction()
         case 0x23: [](){}; break;
         case 0x24: [](){}; break;
         case 0x25: [](){}; break;
-        case 0x26: [](){}; break;
+        case 0x26: LD<H>(); break;
         case 0x27: [](){}; break;
         case 0x28: [](){}; break;
         case 0x29: [](){}; break;
@@ -58,7 +58,7 @@ void CPU::ExecuteNextInstruction()
         case 0x2B: [](){}; break;
         case 0x2C: [](){}; break;
         case 0x2D: [](){}; break;
-        case 0x2E: [](){}; break;
+        case 0x2E: LD<L>(); break;
         case 0x2F: [](){}; break;
 
         case 0x30: [](){}; break;
