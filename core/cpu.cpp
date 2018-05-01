@@ -6,7 +6,7 @@ CPU::CPU() : m_PC{0x100} { }
 
 void CPU::ExecuteNextInstruction()
 {
-    uint8_t opcode = m_mem.Read(++m_PC);
+    uint8_t opcode = m_mem.Read(m_PC++);
     
     switch(opcode)
     {
@@ -78,13 +78,13 @@ void CPU::ExecuteNextInstruction()
         case 0x3E: [](){}; break;
         case 0x3F: [](){}; break;
 
-        case 0x40: [](){}; break;
-        case 0x41: [](){}; break;
-        case 0x42: [](){}; break;
-        case 0x43: [](){}; break;
-        case 0x44: [](){}; break;
-        case 0x45: [](){}; break;
-        case 0x46: [](){}; break;
+        case 0x40: LD<B, B>(); break;
+        case 0x41: LD<B, C>(); break;
+        case 0x42: LD<B, D>(); break;
+        case 0x43: LD<B, E>(); break;
+        case 0x44: LD<B, H>(); break;
+        case 0x45: LD<B, L>(); break;
+        case 0x46: LD<B, A>(); break;
         case 0x47: [](){}; break;
         case 0x48: [](){}; break;
         case 0x49: [](){}; break;
@@ -137,14 +137,14 @@ void CPU::ExecuteNextInstruction()
         case 0x75: [](){}; break;
         case 0x76: [](){}; break;
         case 0x77: [](){}; break;
-        case 0x78: [](){}; break;
-        case 0x79: [](){}; break;
-        case 0x7A: [](){}; break;
-        case 0x7B: [](){}; break;
-        case 0x7C: [](){}; break;
-        case 0x7D: [](){}; break;
-        case 0x7E: [](){}; break;
-        case 0x7F: [](){}; break;
+        case 0x78: LD<A, B>(); break;
+        case 0x79: LD<A, C>(); break;
+        case 0x7A: LD<A, D>(); break;
+        case 0x7B: LD<A, E>(); break;
+        case 0x7C: LD<A, H>(); break;
+        case 0x7D: LD<A, L>(); break;
+        case 0x7E: LD<A, HL>(); break;
+        case 0x7F: LD<A, A>(); break;
     
         case 0x80: [](){}; break;
         case 0x81: [](){}; break;
