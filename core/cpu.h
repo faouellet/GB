@@ -14,11 +14,14 @@ public:
     void ExecuteNextInstruction();
 
 private:
-    template <uint32_t TReg>
+    template <uint8_t TReg>
     void LD();
 
-    template <uint64_t TLHS, uint64_t TRHS>
+    template <uint8_t TLHS, uint8_t TRHS>
     void LD();
+
+    template <uint8_t TReg>
+    constexpr uint16_t GetMemAddr();
 
 private:
     enum RegisterMask
@@ -48,9 +51,6 @@ private:
         C = 0b1000,
     };
 
-    class Immediate{};
-    class Indirect{};
-
 private:
     std::array<uint8_t, 8>  m_GPRegs;
 
@@ -62,13 +62,14 @@ private:
 };
 
 
-template <uint32_t TReg>
+template <uint8_t TReg>
 void CPU::LD()
 {
+    static_assert(GetNbSetBits<TReg>() == 1, "Immediate load only works with 8-bit registers");
     m_GPRegs[TReg] = m_mem.Read(m_PC++);
 }
 
-template <uint64_t TLHS, uint64_t TRHS>
+template <uint8_t TLHS, uint8_t TRHS>
 void CPU::LD()
 {
     constexpr unsigned int nbBitsSetLHS = GetNbSetBits<TLHS>();
@@ -76,20 +77,47 @@ void CPU::LD()
 
     if constexpr(nbBitsSetLHS == 1)
     {
+        constexpr unsigned int idx = GetSetBitPosition<TLHS>();
+
         if constexpr(nbBitsSetRHS == 1)
         {
-            m_GPRegs[TLHS] = m_GPRegs[TRHS];
+            m_GPRegs[idx] = m_GPRegs[GetSetBitPosition<TRHS>()];
         }
         else if constexpr(nbBitsSetRHS == 2)
         {
-            m_GPRegs[TLHS] = m_mem.Read(TRHS);
+
+            m_GPRegs[idx] = m_mem.Read(GetMemAddr<TRHS>());
         }
     }
     else if constexpr(nbBitsSetLHS == 2)
     {
         if constexpr(nbBitsSetRHS == 1)
         {
-            m_GPRegs[TLHS] = m_GPRegs[TRHS];
+            m_mem.Write(GetMemAddr<TLHS>(), m_GPRegs[GetSetBitPosition<TRHS>()]);
         }
     }
+}
+
+template <uint8_t TReg>
+constexpr uint16_t CPU::GetMemAddr()
+{
+    static_assert(GetNbSetBits<TReg>() <= 2);
+
+    uint16_t addr{};
+    uint8_t pos{};
+    uint8_t val = TReg;
+
+    while(val != 0)
+    {
+        if(val & 1)
+        {
+            addr <<= 8;
+            addr |= m_GPRegs[pos];
+        }
+
+        ++pos;
+        val >>= 1;
+    }
+
+    return addr;
 }
