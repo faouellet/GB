@@ -24,9 +24,9 @@ private:
     constexpr uint16_t GetMemAddr();
 
 private:
-    enum RegisterMask
+    enum RegisterMask : uint8_t
     {
-        // 8 bits
+        // 8-bits registers mask
         A = 0b00000001,
         F = 0b00000010,
         B = 0b00000100,
@@ -36,14 +36,14 @@ private:
         H = 0b01000000,
         L = 0b10000000,
 
-        // 16 bits
+        // 16-bits registers mask
         AF = A + F,
         BC = B + C,
         DE = D + E,
         HL = H + L
     };
 
-    enum class FlagMask
+    enum class FlagMask : uint8_t
     {
         Z = 0b0001,
         N = 0b0010,
