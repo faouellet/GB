@@ -29,8 +29,10 @@ matrix:
       addons:
         apt:
           sources:
+          - ubuntu-toolchain-r-test
           - llvm-toolchain-trusty-6.0
           packages:
+          - g++-5
           - clang-6.0
       env: COMPILER=clang++-6.0
 
