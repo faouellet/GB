@@ -4,7 +4,7 @@
 #include "utils.h"
 
 #include <functional>
-#include <sstream>
+#include <type_traits>
 
 class CPU
 {
@@ -14,14 +14,26 @@ public:
     void ExecuteNextInstruction();
 
 private:
-    template <uint8_t TReg>
+    template <uint8_t Reg>
     void LD();
 
-    template <uint8_t TLHS, uint8_t TRHS>
+    template <uint8_t LHS, uint8_t RHS>
     void LD();
 
-    template <uint8_t TReg>
-    constexpr uint16_t GetMemAddr();
+    template <uint8_t Reg>
+    uint16_t GetMemAddr();
+
+    template <uint8_t LHS, typename TFunc, typename... TFlagHandlers>
+    void ExecuteALU(uint8_t val, TFunc&& func, TFlagHandlers&&... handlers);
+
+    template <uint8_t LHS, uint8_t RHS, typename TFunc, typename... TFlagHandlers>
+    void ExecuteALU(TFunc&& func, TFlagHandlers&&... handlers);
+
+    template <uint8_t Mask>
+    void ResetFlags();
+
+    template <uint8_t Mask>
+    void SetFlags();
 
 private:
     enum RegisterMask : uint8_t
@@ -45,14 +57,15 @@ private:
 
     enum class FlagMask : uint8_t
     {
-        Z = 0b0001,
-        N = 0b0010,
-        H = 0b0100,
-        C = 0b1000,
+        Z = 0b10000000,
+        N = 0b01000000,
+        H = 0b00100000,
+        C = 0b00010000,
     };
 
 private:
-    std::array<uint8_t, 8>  m_GPRegs;
+    static constexpr int m_NB_REGISTERS = 8;
+    std::array<uint8_t, m_NB_REGISTERS>  m_GPRegs;
 
     uint16_t m_SP;
     uint16_t m_PC;
@@ -62,50 +75,50 @@ private:
 };
 
 
-template <uint8_t TReg>
+template <uint8_t Reg>
 void CPU::LD()
 {
-    static_assert(GetNbSetBits<TReg>() == 1, "Immediate load only works with 8-bit registers");
-    m_GPRegs[TReg] = m_mem.Read(m_PC++);
+    static_assert(GetNbSetBits<Reg>() == 1, "Immediate load only works with 8-bit registers");
+    m_GPRegs[Reg] = m_mem.Read(m_PC++);
 }
 
-template <uint8_t TLHS, uint8_t TRHS>
+template <uint8_t LHS, uint8_t RHS>
 void CPU::LD()
 {
-    constexpr unsigned int nbBitsSetLHS = GetNbSetBits<TLHS>();
-    constexpr unsigned int nbBitsSetRHS = GetNbSetBits<TRHS>();
+    constexpr unsigned int nbBitsSetLHS = GetNbSetBits<LHS>();
+    constexpr unsigned int nbBitsSetRHS = GetNbSetBits<RHS>();
 
     if constexpr(nbBitsSetLHS == 1)
     {
-        constexpr unsigned int idx = GetSetBitPosition<TLHS>();
+        constexpr unsigned int idx = GetSetBitPosition<LHS>();
 
         if constexpr(nbBitsSetRHS == 1)
         {
-            m_GPRegs[idx] = m_GPRegs[GetSetBitPosition<TRHS>()];
+            m_GPRegs[idx] = m_GPRegs[GetSetBitPosition<RHS>()];
         }
         else if constexpr(nbBitsSetRHS == 2)
         {
 
-            m_GPRegs[idx] = m_mem.Read(GetMemAddr<TRHS>());
+            m_GPRegs[idx] = m_mem.Read(GetMemAddr<RHS>());
         }
     }
     else if constexpr(nbBitsSetLHS == 2)
     {
         if constexpr(nbBitsSetRHS == 1)
         {
-            m_mem.Write(GetMemAddr<TLHS>(), m_GPRegs[GetSetBitPosition<TRHS>()]);
+            m_mem.Write(GetMemAddr<LHS>(), m_GPRegs[GetSetBitPosition<RHS>()]);
         }
     }
 }
 
-template <uint8_t TReg>
-constexpr uint16_t CPU::GetMemAddr()
+template <uint8_t Reg>
+uint16_t CPU::GetMemAddr()
 {
-    static_assert(GetNbSetBits<TReg>() <= 2);
+    static_assert(GetNbSetBits<Reg>() <= 2);
 
     uint16_t addr{};
     uint8_t pos{};
-    uint8_t val = TReg;
+    uint8_t val = Reg;
 
     while(val != 0)
     {
@@ -120,4 +133,47 @@ constexpr uint16_t CPU::GetMemAddr()
     }
 
     return addr;
+}
+
+template <uint8_t LHS, typename TFunc, typename... TFlagHandlers>
+void CPU::ExecuteALU(uint8_t val, TFunc&& func, TFlagHandlers&&... handlers)
+{
+    static_assert(std::is_invocable_v<TFunc, uint8_t, uint8_t>, "Incorrect ALU operation");
+    //(static_assert(std::is_invocable_v<decltype(handlers), uint8_t>, "TODO"), ...);
+
+    const uint8_t idx = GetSetBitPosition<LHS>();
+    static_assert(idx < m_GPRegs.size());
+
+    const uint8_t result = func(m_GPRegs[idx], val);
+    m_GPRegs[idx] = result;
+    (handlers(result), ...);
+}
+
+template <uint8_t LHS, uint8_t RHS, typename TFunc, typename... TFlagHandlers>
+void CPU::ExecuteALU(TFunc&& func, TFlagHandlers&&... handlers)
+{
+    static_assert(std::is_invocable_v<TFunc, uint8_t, uint8_t>, "Incorrect ALU operation");
+    //(static_assert(std::is_invocable_v<decltype(handlers), uint8_t>, "TODO"), ...);
+
+    const uint8_t idxLHS = GetSetBitPosition<LHS>();
+    static_assert(idxLHS < m_NB_REGISTERS);
+
+    const uint8_t idxRHS = GetSetBitPosition<RHS>();
+    static_assert(idxRHS < m_NB_REGISTERS);
+
+    const uint8_t result = func(m_GPRegs[idxLHS], m_GPRegs[idxRHS]);
+    m_GPRegs[idxLHS] = result;
+    (handlers(result), ...);
+}
+
+template <uint8_t TMask>
+void CPU::ResetFlags()
+{
+    m_GPRegs[1] &= ~TMask;
+}
+
+template <uint8_t TMask>
+void CPU::SetFlags()
+{
+    m_GPRegs[1] |= TMask;
 }
