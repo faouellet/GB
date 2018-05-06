@@ -8,40 +8,42 @@ void CPU::ExecuteNextInstruction()
 {
     uint8_t opcode = m_mem.Read(m_PC++);
     
+#define Reg(a) static_cast<std::underlying_type_t<RegisterMask>>(RegisterMask::a)
+
     switch(opcode)
     {
         case 0x00: [](){}; break;
         case 0x01: [](){}; break;
-        case 0x02: LD<BC, A>(); break;
+        case 0x02: LD<Reg(BC), Reg(A)>(); break;
         case 0x03: [](){}; break;
         case 0x04: [](){}; break;
         case 0x05: [](){}; break;
-        case 0x06: LD<B>(); break;
+        case 0x06: LD<Reg(B)>(); break;
         case 0x07: [](){}; break;
         case 0x08: [](){}; break;
         case 0x09: [](){}; break;
-        case 0x0A: LD<A, BC>(); break;
+        case 0x0A: LD<Reg(A), Reg(BC)>(); break;
         case 0x0B: [](){}; break;
         case 0x0C: [](){}; break;
         case 0x0D: [](){}; break;
-        case 0x0E: LD<C>(); break;
+        case 0x0E: LD<Reg(C)>(); break;
         case 0x0F: [](){}; break;
 
         case 0x10: [](){}; break;
         case 0x11: [](){}; break;
-        case 0x12: LD<DE, A>(); break;
+        case 0x12: LD<Reg(DE), Reg(A)>(); break;
         case 0x13: [](){}; break;
         case 0x14: [](){}; break;
         case 0x15: [](){}; break;
-        case 0x16: LD<D>(); break;
+        case 0x16: LD<Reg(D)>(); break;
         case 0x17: [](){}; break;
         case 0x18: [](){}; break;
         case 0x19: [](){}; break;
-        case 0x1A: LD<A, DE>(); break;
+        case 0x1A: LD<Reg(A), Reg(DE)>(); break;
         case 0x1B: [](){}; break;
         case 0x1C: [](){}; break;
         case 0x1D: [](){}; break;
-        case 0x1E: LD<E>(); break;
+        case 0x1E: LD<Reg(E)>(); break;
         case 0x1F: [](){}; break;
 
         case 0x20: [](){}; break;
@@ -50,7 +52,7 @@ void CPU::ExecuteNextInstruction()
         case 0x23: [](){}; break;
         case 0x24: [](){}; break;
         case 0x25: [](){}; break;
-        case 0x26: LD<H>(); break;
+        case 0x26: LD<Reg(H)>(); break;
         case 0x27: [](){}; break;
         case 0x28: [](){}; break;
         case 0x29: [](){}; break;
@@ -58,7 +60,7 @@ void CPU::ExecuteNextInstruction()
         case 0x2B: [](){}; break;
         case 0x2C: [](){}; break;
         case 0x2D: [](){}; break;
-        case 0x2E: LD<L>(); break;
+        case 0x2E: LD<Reg(L)>(); break;
         case 0x2F: [](){}; break;
 
         case 0x30: [](){}; break;
@@ -78,73 +80,73 @@ void CPU::ExecuteNextInstruction()
         case 0x3E: [](){}; break;
         case 0x3F: [](){}; break;
 
-        case 0x40: LD<B, B>(); break;
-        case 0x41: LD<B, C>(); break;
-        case 0x42: LD<B, D>(); break;
-        case 0x43: LD<B, E>(); break;
-        case 0x44: LD<B, H>(); break;
-        case 0x45: LD<B, L>(); break;
-        case 0x46: LD<B, HL>(); break;
+        case 0x40: LD<Reg(B), Reg(B)>(); break;
+        case 0x41: LD<Reg(B), Reg(C)>(); break;
+        case 0x42: LD<Reg(B), Reg(D)>(); break;
+        case 0x43: LD<Reg(B), Reg(E)>(); break;
+        case 0x44: LD<Reg(B), Reg(H)>(); break;
+        case 0x45: LD<Reg(B), Reg(L)>(); break;
+        case 0x46: LD<Reg(B), Reg(HL)>(); break;
         case 0x47: [](){}; break;
-        case 0x48: LD<C, B>(); break;
-        case 0x49: LD<C, C>(); break;
-        case 0x4A: LD<C, D>(); break;
-        case 0x4B: LD<C, E>(); break;
-        case 0x4C: LD<C, H>(); break;
-        case 0x4D: LD<C, L>(); break;
-        case 0x4E: LD<C, HL>(); break;
+        case 0x48: LD<Reg(C), Reg(B)>(); break;
+        case 0x49: LD<Reg(C), Reg(C)>(); break;
+        case 0x4A: LD<Reg(C), Reg(D)>(); break;
+        case 0x4B: LD<Reg(C), Reg(E)>(); break;
+        case 0x4C: LD<Reg(C), Reg(H)>(); break;
+        case 0x4D: LD<Reg(C), Reg(L)>(); break;
+        case 0x4E: LD<Reg(C), Reg(HL)>(); break;
         case 0x4F: [](){}; break;
 
-        case 0x50: LD<D, B>(); break;
-        case 0x51: LD<D, C>(); break;
-        case 0x52: LD<D, D>(); break;
-        case 0x53: LD<D, E>(); break;
-        case 0x54: LD<D, H>(); break;
-        case 0x55: LD<D, L>(); break;
-        case 0x56: LD<D, HL>(); break;
+        case 0x50: LD<Reg(D), Reg(B)>(); break;
+        case 0x51: LD<Reg(D), Reg(C)>(); break;
+        case 0x52: LD<Reg(D), Reg(D)>(); break;
+        case 0x53: LD<Reg(D), Reg(E)>(); break;
+        case 0x54: LD<Reg(D), Reg(H)>(); break;
+        case 0x55: LD<Reg(D), Reg(L)>(); break;
+        case 0x56: LD<Reg(D), Reg(HL)>(); break;
         case 0x57: [](){}; break;
-        case 0x58: LD<E, B>(); break;
-        case 0x59: LD<E, C>(); break;
-        case 0x5A: LD<E, D>(); break;
-        case 0x5B: LD<E, E>(); break;
-        case 0x5C: LD<E, H>(); break;
-        case 0x5D: LD<E, L>(); break;
-        case 0x5E: LD<E, HL>(); break;
+        case 0x58: LD<Reg(E), Reg(B)>(); break;
+        case 0x59: LD<Reg(E), Reg(C)>(); break;
+        case 0x5A: LD<Reg(E), Reg(D)>(); break;
+        case 0x5B: LD<Reg(E), Reg(E)>(); break;
+        case 0x5C: LD<Reg(E), Reg(H)>(); break;
+        case 0x5D: LD<Reg(E), Reg(L)>(); break;
+        case 0x5E: LD<Reg(E), Reg(HL)>(); break;
         case 0x5F: [](){}; break;
 
-        case 0x60: LD<H, B>(); break;
-        case 0x61: LD<H, C>(); break;
-        case 0x62: LD<H, D>(); break;
-        case 0x63: LD<H, E>(); break;
-        case 0x64: LD<H, H>(); break;
-        case 0x65: LD<H, L>(); break;
-        case 0x66: LD<H, HL>(); break;
+        case 0x60: LD<Reg(H), Reg(B)>(); break;
+        case 0x61: LD<Reg(H), Reg(C)>(); break;
+        case 0x62: LD<Reg(H), Reg(D)>(); break;
+        case 0x63: LD<Reg(H), Reg(E)>(); break;
+        case 0x64: LD<Reg(H), Reg(H)>(); break;
+        case 0x65: LD<Reg(H), Reg(L)>(); break;
+        case 0x66: LD<Reg(H), Reg(HL)>(); break;
         case 0x67: [](){}; break;
-        case 0x68: LD<L, B>(); break;
-        case 0x69: LD<L, C>(); break;
-        case 0x6A: LD<L, D>(); break;
-        case 0x6B: LD<L, E>(); break;
-        case 0x6C: LD<L, H>(); break;
-        case 0x6D: LD<L, L>(); break;
-        case 0x6E: LD<L, HL>(); break;
+        case 0x68: LD<Reg(L), Reg(B)>(); break;
+        case 0x69: LD<Reg(L), Reg(C)>(); break;
+        case 0x6A: LD<Reg(L), Reg(D)>(); break;
+        case 0x6B: LD<Reg(L), Reg(E)>(); break;
+        case 0x6C: LD<Reg(L), Reg(H)>(); break;
+        case 0x6D: LD<Reg(L), Reg(L)>(); break;
+        case 0x6E: LD<Reg(L), Reg(HL)>(); break;
         case 0x6F: [](){}; break;
 
-        case 0x70: LD<HL, B>(); break;
-        case 0x71: LD<HL, C>(); break;
-        case 0x72: LD<HL, D>(); break;
-        case 0x73: LD<HL, E>(); break;
-        case 0x74: LD<HL, H>(); break;
-        case 0x75: LD<HL, L>(); break;
+        case 0x70: LD<Reg(HL), Reg(B)>(); break;
+        case 0x71: LD<Reg(HL), Reg(C)>(); break;
+        case 0x72: LD<Reg(HL), Reg(D)>(); break;
+        case 0x73: LD<Reg(HL), Reg(E)>(); break;
+        case 0x74: LD<Reg(HL), Reg(H)>(); break;
+        case 0x75: LD<Reg(HL), Reg(L)>(); break;
         case 0x76: [](){}; break;
-        case 0x77: LD<HL, A>(); break;
-        case 0x78: LD<A, B>(); break;
-        case 0x79: LD<A, C>(); break;
-        case 0x7A: LD<A, D>(); break;
-        case 0x7B: LD<A, E>(); break;
-        case 0x7C: LD<A, H>(); break;
-        case 0x7D: LD<A, L>(); break;
-        case 0x7E: LD<A, HL>(); break;
-        case 0x7F: LD<A, A>(); break;
+        case 0x77: LD<Reg(HL), Reg(A)>(); break;
+        case 0x78: LD<Reg(A), Reg(B)>(); break;
+        case 0x79: LD<Reg(A), Reg(C)>(); break;
+        case 0x7A: LD<Reg(A), Reg(D)>(); break;
+        case 0x7B: LD<Reg(A), Reg(E)>(); break;
+        case 0x7C: LD<Reg(A), Reg(H)>(); break;
+        case 0x7D: LD<Reg(A), Reg(L)>(); break;
+        case 0x7E: LD<Reg(A), Reg(HL)>(); break;
+        case 0x7F: LD<Reg(A), Reg(A)>(); break;
     
         case 0x80: [](){}; break;
         case 0x81: [](){}; break;
@@ -153,7 +155,7 @@ void CPU::ExecuteNextInstruction()
         case 0x84: [](){}; break;
         case 0x85: [](){}; break;
         case 0x86: [](){}; break;
-        case 0x87: ExecuteALU<A, A>(std::plus<uint8_t>{}); break;
+        case 0x87: ExecuteALU(RegisterMask::A, RegisterMask::A, std::plus<uint8_t>{}); break;
         case 0x88: [](){}; break;
         case 0x89: [](){}; break;
         case 0x8A: [](){}; break;
@@ -282,4 +284,6 @@ void CPU::ExecuteNextInstruction()
         case 0xFE: [](){}; break;
         case 0xFF: [](){}; break;
     }
+
+#undef Reg
 }

@@ -1,7 +1,7 @@
 #pragma once
 
+#include <cassert>
 #include <cstdint>
-#include <type_traits>
 
 template <uint64_t TVal>
 constexpr unsigned int GetNbSetBits()
@@ -17,14 +17,12 @@ constexpr unsigned int GetNbSetBits()
     return count;
 }
 
-template <uint64_t TVal>
-constexpr unsigned int GetSetBitPosition()
+constexpr unsigned int GetSetBitPosition(uint64_t val)
 {
-    static_assert(TVal != 0, "No bit set in 0");
-    static_assert((TVal & (TVal - 1)) == 0, "More than one bit set");
+    assert(val != 0 && "No bit set in 0");
+    assert((val & (val - 1)) == 0 && "More than one bit set");
 
     unsigned int pos{};
-    uint64_t val = TVal;
     while(!(val & 1))
     {
         ++pos;
