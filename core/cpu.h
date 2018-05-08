@@ -52,10 +52,10 @@ private:
     uint16_t GetMemAddr();
 
     template <typename TFunc, typename... TFlagHandlers>
-    void ExecuteALU(RegisterMask lhs, uint8_t val, TFunc&& func, TFlagHandlers&&... handlers);
+    void ExecuteALU(uint8_t val, TFunc&& func, TFlagHandlers&&... handlers);
 
     template <typename TFunc, typename... TFlagHandlers>
-    void ExecuteALU(RegisterMask lhs, RegisterMask rhs, TFunc&& func, TFlagHandlers&&... handlers);
+    void ExecuteALU(RegisterMask reg, TFunc&& func, TFlagHandlers&&... handlers);
 
     template <uint8_t Mask>
     void ResetFlags();
@@ -65,6 +65,7 @@ private:
 
 private:
     static constexpr int m_NB_REGISTERS = 8;
+    static constexpr int m_ACC_REGISTER_IDX = 0;
     static constexpr int m_FLAG_REGISTER_IDX = 1;
     std::array<uint8_t, m_NB_REGISTERS>  m_GPRegs;
 
@@ -140,16 +141,13 @@ uint16_t CPU::GetMemAddr()
 }
 
 template <typename TFunc, typename... TFlagHandlers>
-void CPU::ExecuteALU(RegisterMask lhs, uint8_t val, TFunc&& func, TFlagHandlers&&... handlers)
+void CPU::ExecuteALU(uint8_t val, TFunc&& func, TFlagHandlers&&... handlers)
 {
     static_assert(std::is_invocable_v<TFunc, uint8_t, uint8_t>, "Incorrect ALU operation");
     //(static_assert(std::is_invocable_v<decltype(handlers), uint8_t>, "TODO"), ...);
 
-    const uint8_t idx = GetSetBitPosition(static_cast<std::underlying_type_t<RegisterMask>>(lhs));
-    assert(idx < m_GPRegs.size() && "Invalid register");
-
-    const uint8_t result = func(m_GPRegs[idx], val);
-    m_GPRegs[idx] = result;
+    const uint8_t result = func(m_GPRegs[m_ACC_REGISTER_IDX], val);
+    m_GPRegs[m_ACC_REGISTER_IDX] = result;
 
     // Set zero flag if result is 0
     m_GPRegs[m_FLAG_REGISTER_IDX] |= (result == 0 ? 0b10000000 : 0);
@@ -158,12 +156,12 @@ void CPU::ExecuteALU(RegisterMask lhs, uint8_t val, TFunc&& func, TFlagHandlers&
 }
 
 template <typename TFunc, typename... TFlagHandlers>
-void CPU::ExecuteALU(RegisterMask lhs, RegisterMask rhs, TFunc&& func, TFlagHandlers&&... handlers)
+void CPU::ExecuteALU(RegisterMask reg, TFunc&& func, TFlagHandlers&&... handlers)
 {
-    const uint8_t idxRHS = GetSetBitPosition(static_cast<std::underlying_type_t<RegisterMask>>(rhs));
-    assert(idxRHS < m_NB_REGISTERS && "Invalid register");
+    const uint8_t regIdx = GetSetBitPosition(static_cast<std::underlying_type_t<RegisterMask>>(reg));
+    assert(regIdx < m_NB_REGISTERS && "Invalid register");
 
-    ExecuteALU(lhs, m_GPRegs[idxRHS], func, handlers...);
+    ExecuteALU(m_GPRegs[regIdx], func, handlers...);
 }
 
 template <uint8_t TMask>

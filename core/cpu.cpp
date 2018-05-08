@@ -155,7 +155,7 @@ void CPU::ExecuteNextInstruction()
         case 0x84: [](){}; break;
         case 0x85: [](){}; break;
         case 0x86: [](){}; break;
-        case 0x87: ExecuteALU(RegisterMask::A, RegisterMask::A, std::plus<uint8_t>{}); break;
+        case 0x87: ExecuteALU(RegisterMask::A, std::plus<uint8_t>{}); break;
         case 0x88: [](){}; break;
         case 0x89: [](){}; break;
         case 0x8A: [](){}; break;
