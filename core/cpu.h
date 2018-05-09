@@ -57,6 +57,9 @@ private:
     template <typename TOp, typename TFlagSetter, typename... TFlagHandlers>
     void ExecuteALU(RegisterMask reg, TOp&& op, TFlagSetter&& flagSetter, TFlagHandlers&&... handlers);
 
+    template <typename TOp, typename TFlagSetter, typename... TFlagHandlers>
+    void ExecuteALU(TOp&& op, TFlagSetter&& flagSetter, TFlagHandlers&&... handlers);
+
 private:
     static constexpr int m_NB_REGISTERS = 8;
     static constexpr int m_ACC_REGISTER_IDX = 0;
@@ -162,4 +165,10 @@ void CPU::ExecuteALU(RegisterMask reg, TOp&& op, TFlagSetter&& flagSetter, TFlag
     assert(regIdx < m_NB_REGISTERS && "Invalid register");
 
     ExecuteALU(m_GPRegs[regIdx], op, flagSetter, handlers...);
+}
+
+template <typename TOp, typename TFlagSetter, typename... TFlagHandlers>
+void CPU::ExecuteALU(TOp&& op, TFlagSetter&& flagSetter, TFlagHandlers&&... handlers)
+{
+    ExecuteALU(m_mem.Read(m_PC++), op, flagSetter, handlers...);
 }
