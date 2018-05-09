@@ -24,12 +24,12 @@ void CPU::ExecuteNextInstruction()
     auto ADC = [this](uint8_t lhs, uint8_t rhs)
     {
         return lhs + rhs + m_GPRegs[m_FLAG_REGISTER_IDX];
-    }
+    };
 
     auto SBC = [this](uint8_t lhs, uint8_t rhs)
     {
         return lhs - (rhs + m_GPRegs[m_FLAG_REGISTER_IDX]);
-    }
+    };
 
     uint8_t opcode = m_mem.Read(m_PC++);
     
@@ -190,7 +190,7 @@ void CPU::ExecuteNextInstruction()
         case 0x83: ExecuteALU(RegisterMask::E, std::plus<uint8_t>{}, resetFlags(Flag(N)), setCarryFlags); break;
         case 0x84: ExecuteALU(RegisterMask::H, std::plus<uint8_t>{}, resetFlags(Flag(N)), setCarryFlags); break;
         case 0x85: ExecuteALU(RegisterMask::L, std::plus<uint8_t>{}, resetFlags(Flag(N)), setCarryFlags); break;
-        case 0x86: [](){}; break;
+        case 0x86: ExecuteALU(RegisterMask::HL, std::plus<uint8_t>{}, resetFlags(Flag(N)), setCarryFlags); break;
         case 0x87: ExecuteALU(RegisterMask::A, std::plus<uint8_t>{}, resetFlags(Flag(N)), setCarryFlags); break;
 
         // ADC
@@ -200,7 +200,7 @@ void CPU::ExecuteNextInstruction()
         case 0x8B: ExecuteALU(RegisterMask::E, ADC, resetFlags(Flag(N)), setCarryFlags); break;
         case 0x8C: ExecuteALU(RegisterMask::H, ADC, resetFlags(Flag(N)), setCarryFlags); break;
         case 0x8D: ExecuteALU(RegisterMask::L, ADC, resetFlags(Flag(N)), setCarryFlags); break;
-        case 0x8E: [](){}; break;
+        case 0x8E: ExecuteALU(RegisterMask::HL, ADC, resetFlags(Flag(N)), setCarryFlags); break;
         case 0x8F: ExecuteALU(RegisterMask::A, ADC, resetFlags(Flag(N)), setCarryFlags); break;
     
         // SUB
@@ -210,7 +210,7 @@ void CPU::ExecuteNextInstruction()
         case 0x93: ExecuteALU(RegisterMask::E, std::minus<uint8_t>{}, setFlags(Flag(N)), setCarryFlags); break;
         case 0x94: ExecuteALU(RegisterMask::H, std::minus<uint8_t>{}, setFlags(Flag(N)), setCarryFlags); break;
         case 0x95: ExecuteALU(RegisterMask::L, std::minus<uint8_t>{}, setFlags(Flag(N)), setCarryFlags); break;
-        case 0x96: [](){}; break;
+        case 0x96: ExecuteALU(RegisterMask::HL, std::minus<uint8_t>{}, setFlags(Flag(N)), setCarryFlags); break;
         case 0x97: ExecuteALU(RegisterMask::A, std::minus<uint8_t>{}, setFlags(Flag(N)), setCarryFlags); break;
 
         // SBC
@@ -220,7 +220,7 @@ void CPU::ExecuteNextInstruction()
         case 0x9B: ExecuteALU(RegisterMask::E, SBC, setFlags(Flag(N)), setCarryFlags); break;
         case 0x9C: ExecuteALU(RegisterMask::H, SBC, setFlags(Flag(N)), setCarryFlags); break;
         case 0x9D: ExecuteALU(RegisterMask::L, SBC, setFlags(Flag(N)), setCarryFlags); break;
-        case 0x9E: [](){}; break;
+        case 0x9E: ExecuteALU(RegisterMask::HL, SBC, setFlags(Flag(N)), setCarryFlags); break;
         case 0x9F: ExecuteALU(RegisterMask::A, SBC, setFlags(Flag(N)), setCarryFlags); break;
 
         // AND
@@ -230,7 +230,7 @@ void CPU::ExecuteNextInstruction()
         case 0xA3: ExecuteALU(RegisterMask::E, std::bit_and<uint8_t>{}, resetFlags(Flag(N) | ~Flag(H) | Flag(C))); break;
         case 0xA4: ExecuteALU(RegisterMask::H, std::bit_and<uint8_t>{}, resetFlags(Flag(N) | ~Flag(H) | Flag(C))); break;
         case 0xA5: ExecuteALU(RegisterMask::L, std::bit_and<uint8_t>{}, resetFlags(Flag(N) | ~Flag(H) | Flag(C))); break;
-        case 0xA6: [](){}; break;
+        case 0xA6: ExecuteALU(RegisterMask::HL, std::bit_and<uint8_t>{}, resetFlags(Flag(N) | ~Flag(H) | Flag(C))); break;
         case 0xA7: ExecuteALU(RegisterMask::A, std::bit_and<uint8_t>{}, resetFlags(Flag(N) | ~Flag(H) | Flag(C))); break;
         
         // XOR
@@ -240,7 +240,7 @@ void CPU::ExecuteNextInstruction()
         case 0xAB: ExecuteALU(RegisterMask::E, std::bit_xor<uint8_t>{}, resetFlags(Flag(N) | Flag(H) | Flag(C))); break;
         case 0xAC: ExecuteALU(RegisterMask::H, std::bit_xor<uint8_t>{}, resetFlags(Flag(N) | Flag(H) | Flag(C))); break;
         case 0xAD: ExecuteALU(RegisterMask::L, std::bit_xor<uint8_t>{}, resetFlags(Flag(N) | Flag(H) | Flag(C))); break;
-        case 0xAE: [](){}; break;
+        case 0xAE: ExecuteALU(RegisterMask::HL, std::bit_xor<uint8_t>{}, resetFlags(Flag(N) | Flag(H) | Flag(C))); break;
         case 0xAF: ExecuteALU(RegisterMask::A, std::bit_xor<uint8_t>{}, resetFlags(Flag(N) | Flag(H) | Flag(C))); break;
 
         // OR
@@ -250,7 +250,7 @@ void CPU::ExecuteNextInstruction()
         case 0xB3: ExecuteALU(RegisterMask::E, std::bit_or<uint8_t>{}, resetFlags(Flag(N) | Flag(H) | Flag(C))); break;
         case 0xB4: ExecuteALU(RegisterMask::H, std::bit_or<uint8_t>{}, resetFlags(Flag(N) | Flag(H) | Flag(C))); break;
         case 0xB5: ExecuteALU(RegisterMask::L, std::bit_or<uint8_t>{}, resetFlags(Flag(N) | Flag(H) | Flag(C))); break;
-        case 0xB6: [](){}; break;
+        case 0xB6: ExecuteALU(RegisterMask::HL, std::bit_or<uint8_t>{}, resetFlags(Flag(N) | Flag(H) | Flag(C))); break;
         case 0xB7: ExecuteALU(RegisterMask::A, std::bit_or<uint8_t>{}, resetFlags(Flag(N) | Flag(H) | Flag(C))); break;
 
         case 0xB8: [](){}; break;

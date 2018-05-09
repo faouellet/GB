@@ -48,8 +48,7 @@ private:
     template <uint8_t LHS, uint8_t RHS>
     void LD();
 
-    template <uint8_t Reg>
-    uint16_t GetMemAddr();
+    constexpr uint16_t GetMemAddr(uint8_t reg);
 
     template <typename TOp, typename TFlagSetter, typename... TFlagHandlers>
     void ExecuteALU(uint8_t val, TOp&& op, TFlagSetter&& flagSetter, TFlagHandlers&&... handlers);
@@ -76,7 +75,7 @@ private:
 template <uint8_t Reg>
 void CPU::LD()
 {
-    static_assert(GetNbSetBits<Reg>() == 1, "Immediate load only works with 8-bit registers");
+    static_assert(GetNbSetBits(Reg) == 1, "Immediate load only works with 8-bit registers");
     
     constexpr unsigned int regIdx = GetSetBitPosition(Reg);
     static_assert(regIdx != m_FLAG_REGISTER_IDX, "Loading into flag register is forbidden");
@@ -87,8 +86,8 @@ void CPU::LD()
 template <uint8_t LHS, uint8_t RHS>
 void CPU::LD()
 {
-    constexpr unsigned int nbBitsSetLHS = GetNbSetBits<LHS>();
-    constexpr unsigned int nbBitsSetRHS = GetNbSetBits<RHS>();
+    constexpr unsigned int nbBitsSetLHS = GetNbSetBits(LHS);
+    constexpr unsigned int nbBitsSetRHS = GetNbSetBits(RHS);
 
     if constexpr(nbBitsSetLHS == 1)
     {
@@ -101,37 +100,35 @@ void CPU::LD()
         else if constexpr(nbBitsSetRHS == 2)
         {
 
-            m_GPRegs[idx] = m_mem.Read(GetMemAddr<RHS>());
+            m_GPRegs[idx] = m_mem.Read(GetMemAddr(RHS));
         }
     }
     else if constexpr(nbBitsSetLHS == 2)
     {
         if constexpr(nbBitsSetRHS == 1)
         {
-            m_mem.Write(GetMemAddr<LHS>(), m_GPRegs[GetSetBitPosition(RHS)]);
+            m_mem.Write(GetMemAddr(LHS), m_GPRegs[GetSetBitPosition(RHS)]);
         }
     }
 }
 
-template <uint8_t Reg>
-uint16_t CPU::GetMemAddr()
+constexpr uint16_t CPU::GetMemAddr(uint8_t reg)
 {
-    static_assert(GetNbSetBits<Reg>() <= 2);
+    assert(GetNbSetBits(reg) <= 2);
 
     uint16_t addr{};
     uint8_t pos{};
-    uint8_t val = Reg;
 
-    while(val != 0)
+    while(reg != 0)
     {
-        if(val & 1)
+        if(reg & 1)
         {
             addr <<= 8;
             addr |= m_GPRegs[pos];
         }
 
         ++pos;
-        val >>= 1;
+        reg >>= 1;
     }
 
     return addr;
@@ -161,10 +158,20 @@ void CPU::ExecuteALU(uint8_t val, TOp&& op, TFlagSetter&& flagSetter, TFlagHandl
 template <typename TOp, typename TFlagSetter, typename... TFlagHandlers>
 void CPU::ExecuteALU(RegisterMask reg, TOp&& op, TFlagSetter&& flagSetter, TFlagHandlers&&... handlers)
 {
-    const uint8_t regIdx = GetSetBitPosition(static_cast<std::underlying_type_t<RegisterMask>>(reg));
-    assert(regIdx < m_NB_REGISTERS && "Invalid register");
+    const uint8_t regBits = static_cast<std::underlying_type_t<RegisterMask>>(reg);
+    unsigned int nbBitsSet = GetNbSetBits(regBits);
+    
+    if (nbBitsSet == 1)
+    {
+        const uint8_t regIdx = GetSetBitPosition(static_cast<std::underlying_type_t<RegisterMask>>(reg));
+        assert(regIdx < m_NB_REGISTERS && "Invalid register");
 
-    ExecuteALU(m_GPRegs[regIdx], op, flagSetter, handlers...);
+        ExecuteALU(m_GPRegs[regIdx], op, flagSetter, handlers...);
+    }
+    else
+    {
+        ExecuteALU(m_mem.Read(GetMemAddr(regBits)), op, flagSetter, handlers...);
+    }
 }
 
 template <typename TOp, typename TFlagSetter, typename... TFlagHandlers>
