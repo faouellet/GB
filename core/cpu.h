@@ -51,17 +51,11 @@ private:
     template <uint8_t Reg>
     uint16_t GetMemAddr();
 
-    template <typename TFunc, typename... TFlagHandlers>
-    void ExecuteALU(uint8_t val, TFunc&& func, TFlagHandlers&&... handlers);
+    template <typename TOp, typename TFlagSetter, typename... TFlagHandlers>
+    void ExecuteALU(uint8_t val, TOp&& op, TFlagSetter&& flagSetter, TFlagHandlers&&... handlers);
 
-    template <typename TFunc, typename... TFlagHandlers>
-    void ExecuteALU(RegisterMask reg, TFunc&& func, TFlagHandlers&&... handlers);
-
-    template <uint8_t Mask>
-    void ResetFlags();
-
-    template <uint8_t Mask>
-    void SetFlags();
+    template <typename TOp, typename TFlagSetter, typename... TFlagHandlers>
+    void ExecuteALU(RegisterMask reg, TOp&& op, TFlagSetter&& flagSetter, TFlagHandlers&&... handlers);
 
 private:
     static constexpr int m_NB_REGISTERS = 8;
@@ -140,38 +134,32 @@ uint16_t CPU::GetMemAddr()
     return addr;
 }
 
-template <typename TFunc, typename... TFlagHandlers>
-void CPU::ExecuteALU(uint8_t val, TFunc&& func, TFlagHandlers&&... handlers)
+template <typename TOp, typename TFlagSetter, typename... TFlagHandlers>
+void CPU::ExecuteALU(uint8_t val, TOp&& op, TFlagSetter&& flagSetter, TFlagHandlers&&... handlers)
 {
-    static_assert(std::is_invocable_v<TFunc, uint8_t, uint8_t>, "Incorrect ALU operation");
-    //(static_assert(std::is_invocable_v<decltype(handlers), uint8_t>, "TODO"), ...);
+    static_assert(std::is_invocable_v<TOp, uint8_t, uint8_t>, "Incorrect ALU operation");
+    static_assert(std::is_invocable_v<TFlagSetter>, "Incorrect flag setter");
+    //(static_assert(std::is_invocable_v<decltype(handlers), uint8_t, uint8_t>, "TODO"), ...);
 
-    const uint8_t result = func(m_GPRegs[m_ACC_REGISTER_IDX], val);
+    const uint8_t lhsVal = m_GPRegs[m_ACC_REGISTER_IDX];
+    const uint8_t result = op(lhsVal, val);
     m_GPRegs[m_ACC_REGISTER_IDX] = result;
 
     // Set zero flag if result is 0
     m_GPRegs[m_FLAG_REGISTER_IDX] |= (result == 0 ? 0b10000000 : 0);
 
-    (handlers(result), ...);
+    // Unconditional flag setting
+    flagSetter();
+
+    // Conditional flag setting
+    (handlers(lhsVal, val), ...);
 }
 
-template <typename TFunc, typename... TFlagHandlers>
-void CPU::ExecuteALU(RegisterMask reg, TFunc&& func, TFlagHandlers&&... handlers)
+template <typename TOp, typename TFlagSetter, typename... TFlagHandlers>
+void CPU::ExecuteALU(RegisterMask reg, TOp&& op, TFlagSetter&& flagSetter, TFlagHandlers&&... handlers)
 {
     const uint8_t regIdx = GetSetBitPosition(static_cast<std::underlying_type_t<RegisterMask>>(reg));
     assert(regIdx < m_NB_REGISTERS && "Invalid register");
 
-    ExecuteALU(m_GPRegs[regIdx], func, handlers...);
-}
-
-template <uint8_t TMask>
-void CPU::ResetFlags()
-{
-    m_GPRegs[m_FLAG_REGISTER_IDX] &= ~TMask;
-}
-
-template <uint8_t TMask>
-void CPU::SetFlags()
-{
-    m_GPRegs[m_FLAG_REGISTER_IDX] |= TMask;
+    ExecuteALU(m_GPRegs[regIdx], op, flagSetter, handlers...);
 }

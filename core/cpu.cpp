@@ -6,10 +6,23 @@ CPU::CPU() : m_PC{0x100} { }
 
 void CPU::ExecuteNextInstruction()
 {
-    uint8_t opcode = m_mem.Read(m_PC++);
-    
+#define Flag(a) static_cast<std::underlying_type_t<FlagMask>>(FlagMask::a)
 #define Reg(a) static_cast<std::underlying_type_t<RegisterMask>>(RegisterMask::a)
 
+    auto setFlags   = [this](uint8_t mask) { return [this, mask](){ m_GPRegs[m_FLAG_REGISTER_IDX] |= mask; }; };
+    auto resetFlags = [this](uint8_t mask) { return [this, mask](){ m_GPRegs[m_FLAG_REGISTER_IDX] &= ~mask; }; };
+
+    auto setCarryFlags = [this](uint8_t lhs, uint8_t rhs)
+    {
+        const bool isAdd = m_GPRegs[m_FLAG_REGISTER_IDX] & Flag(N);
+        const uint32_t res = isAdd ? (lhs + rhs) : (lhs - rhs);
+        const uint32_t carryBits = lhs ^ rhs ^ res;
+        m_GPRegs[m_FLAG_REGISTER_IDX] |= (carryBits & 0x10) ? Flag(H) : 0;
+        m_GPRegs[m_FLAG_REGISTER_IDX] |= (carryBits & 0x100) ? Flag(C) : 0;
+    };
+
+    uint8_t opcode = m_mem.Read(m_PC++);
+    
     switch(opcode)
     {
         case 0x00: [](){}; break;
@@ -155,7 +168,7 @@ void CPU::ExecuteNextInstruction()
         case 0x84: [](){}; break;
         case 0x85: [](){}; break;
         case 0x86: [](){}; break;
-        case 0x87: ExecuteALU(RegisterMask::A, std::plus<uint8_t>{}); break;
+        case 0x87: ExecuteALU(RegisterMask::A, std::plus<uint8_t>{}, resetFlags(Flag(N)), setCarryFlags); break;
         case 0x88: [](){}; break;
         case 0x89: [](){}; break;
         case 0x8A: [](){}; break;
@@ -285,5 +298,6 @@ void CPU::ExecuteNextInstruction()
         case 0xFF: [](){}; break;
     }
 
+#undef Flag
 #undef Reg
 }
