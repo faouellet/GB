@@ -12,6 +12,7 @@ public:
     CPU();
 
     void ExecuteNextInstruction();
+    void Reset();
 
 private:
     enum class RegisterMask : uint8_t
@@ -69,7 +70,6 @@ private:
     uint16_t m_PC;
 
     Memory m_mem;
-    std::array<std::function<void()>, 256> m_commands;
 };
 
 template <uint8_t Reg>

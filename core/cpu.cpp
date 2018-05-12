@@ -2,7 +2,10 @@
 
 #include <cassert>
 
-CPU::CPU() : m_PC{0x100} { }
+CPU::CPU()
+{
+    Reset();
+}
 
 void CPU::ExecuteNextInstruction()
 {
@@ -333,4 +336,10 @@ void CPU::ExecuteNextInstruction()
 
 #undef Flag
 #undef Reg
+}
+
+void CPU::Reset()
+{
+    m_PC = 0x100;
+    m_GPRegs.fill(0);
 }
