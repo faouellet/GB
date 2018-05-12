@@ -13,7 +13,7 @@ int main(int argc, char** argv)
     }
 
     const char* romFilePath = argv[1];
-    if(!emu.LoadROM(romFilePath))
+    if(!emu.LoadCartridge(romFilePath))
     {
         std::cout << "Unable to load ROM: " << romFilePath << "\n";
         return 1;

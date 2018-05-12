@@ -3,18 +3,25 @@
 #include <fstream>
 #include <iterator>
 
-bool Emulator::LoadROM(const std::string& romFilePath)
+bool Emulator::LoadCartridge(const std::string& filePath)
 {
-    std::ifstream inputStream{romFilePath, std::ios::binary};
+    std::ifstream inputStream{filePath, std::ios::binary};
     if(inputStream)
     {
         std::vector<uint8_t> gameData{std::istreambuf_iterator<char>(inputStream),
-                                      std::istreambuf_iterator<char>()};       
+                                      std::istreambuf_iterator<char>()};
+
+        m_mem.LoadROMBank(gameData);
+        return true;
     }
+
+    return false;
 }
 
 void Emulator::Play()
 {
+    m_cpu.Reset();
+
     for(;;)
     {
         m_cpu.ExecuteNextInstruction();
