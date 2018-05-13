@@ -11,8 +11,9 @@ public:
     DebugWindow(QWidget* parent = nullptr);
 
 private:
-    QGroupBox* CreateAsmBox() const;
-    QGroupBox* CreateCpuBox() const;
+    QGroupBox* CreateCpuStateBox() const;
+    QGroupBox* CreateDisasmBox() const;
+    QGroupBox* CreateMemoryDumpBox() const;
 };
 
 #endif // DEBUG_WINDOW_H
