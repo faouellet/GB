@@ -103,7 +103,7 @@ void CPU::ExecuteNextInstruction()
         case 0x3B: [](){}; break;
         case 0x3C: [](){}; break;
         case 0x3D: [](){}; break;
-        case 0x3E: [](){}; break;
+        case 0x3E: LD<Reg(A)>(); break;
         case 0x3F: [](){}; break;
 
         // LD B, #
@@ -266,11 +266,11 @@ void CPU::ExecuteNextInstruction()
         case 0xBF: [](){}; break;
 
         case 0xC0: [](){}; break;
-        case 0xC1: [](){}; break;
+        case 0xC1: POP<Reg(BC)>(); break;
         case 0xC2: [](){}; break;
         case 0xC3: [](){}; break;
         case 0xC4: [](){}; break;
-        case 0xC5: [](){}; break;
+        case 0xC5: PUSH<Reg(BC)>(); break;
         case 0xC6: [](){}; break;
         case 0xC7: [](){}; break;
         case 0xC8: [](){}; break;
@@ -283,11 +283,11 @@ void CPU::ExecuteNextInstruction()
         case 0xCF: [](){}; break;
 
         case 0xD0: [](){}; break;
-        case 0xD1: [](){}; break;
+        case 0xD1: POP<Reg(DE)>(); break;
         case 0xD2: [](){}; break;
         case 0xD3: assert("Invalid opcode"); break;
         case 0xD4: [](){}; break;
-        case 0xD5: [](){}; break;
+        case 0xD5: PUSH<Reg(DE)>(); break;
         case 0xD6: [](){}; break;
         case 0xD7: [](){}; break;
         case 0xD8: [](){}; break;
@@ -300,11 +300,11 @@ void CPU::ExecuteNextInstruction()
         case 0xDF: [](){}; break;
 
         case 0xE0: [](){}; break;
-        case 0xE1: [](){}; break;
+        case 0xE1: POP<Reg(HL)>(); break;
         case 0xE2: [](){}; break;
         case 0xE3: assert("Invalid opcode"); break;
         case 0xE4: assert("Invalid opcode"); break;
-        case 0xE5: [](){}; break;
+        case 0xE5: PUSH<Reg(HL)>(); break;
         case 0xE6: [](){}; break;
         case 0xE7: [](){}; break;
         case 0xE8: [](){}; break;
@@ -317,11 +317,11 @@ void CPU::ExecuteNextInstruction()
         case 0xEF: [](){}; break;
 
         case 0xF0: [](){}; break;
-        case 0xF1: [](){}; break;
+        case 0xF1: POP<Reg(AF)>(); break;
         case 0xF2: [](){}; break;
         case 0xF3: [](){}; break;
         case 0xF4: assert("Invalid opcode"); break;
-        case 0xF5: [](){}; break;
+        case 0xF5: PUSH<Reg(AF)>(); break;
         case 0xF6: [](){}; break;
         case 0xF7: [](){}; break;
         case 0xF8: [](){}; break;
@@ -341,5 +341,6 @@ void CPU::ExecuteNextInstruction()
 void CPU::Reset()
 {
     m_PC = 0x100;
+    m_SP = 0xFFFE;
     m_GPRegs.fill(0);
 }

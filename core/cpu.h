@@ -43,14 +43,14 @@ private:
     };
 
 private:
+    // Loads
     template <uint8_t Reg>
     void LD();
 
     template <uint8_t LHS, uint8_t RHS>
     void LD();
 
-    constexpr uint16_t GetMemAddr(uint8_t reg);
-
+    // ALU operations
     template <typename TOp, typename TFlagSetter, typename... TFlagHandlers>
     void ExecuteALU(uint8_t val, TOp&& op, TFlagSetter&& flagSetter, TFlagHandlers&&... handlers);
 
@@ -59,6 +59,16 @@ private:
 
     template <typename TOp, typename TFlagSetter, typename... TFlagHandlers>
     void ExecuteALU(TOp&& op, TFlagSetter&& flagSetter, TFlagHandlers&&... handlers);
+
+    // Stack pointer manipulation
+    template <uint16_t Reg>
+    void PUSH();
+
+    template <uint16_t Reg>
+    void POP();
+
+    // Utility
+    constexpr uint16_t GetMemAddr(uint8_t reg);
 
 private:
     static constexpr int m_NB_REGISTERS = 8;
@@ -178,4 +188,30 @@ template <typename TOp, typename TFlagSetter, typename... TFlagHandlers>
 void CPU::ExecuteALU(TOp&& op, TFlagSetter&& flagSetter, TFlagHandlers&&... handlers)
 {
     ExecuteALU(m_mem.Read(m_PC++), op, flagSetter, handlers...);
+}
+
+template <uint16_t Reg>
+void CPU::PUSH()
+{
+    const uint8_t regBits = static_cast<std::underlying_type_t<RegisterMask>>(Reg);
+    unsigned int nbBitsSet = GetNbSetBits(regBits);
+    assert(nbBitsSet == 2 && "Push only works with register pairs");
+
+    for(auto pos : GetSetBitPositions(Reg))
+    {
+        m_mem.Write(m_SP--, m_GPRegs[pos]);
+    }
+}
+
+template <uint16_t Reg>
+void CPU::POP()
+{
+    const uint8_t regBits = static_cast<std::underlying_type_t<RegisterMask>>(Reg);
+    unsigned int nbBitsSet = GetNbSetBits(regBits);
+    assert(nbBitsSet == 2 && "Push only works with register pairs");
+
+    for(auto pos : GetSetBitPositions(Reg))
+    {
+        m_GPRegs[pos] = m_mem.Read(++m_SP);
+    }
 }

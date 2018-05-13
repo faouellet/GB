@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <cstdint>
+#include <vector>
 
 constexpr unsigned int GetNbSetBits(uint64_t val)
 {
@@ -29,3 +30,5 @@ constexpr unsigned int GetSetBitPosition(uint64_t val)
 
     return pos;
 }
+
+std::vector<unsigned int> GetSetBitPositions(uint64_t val);
