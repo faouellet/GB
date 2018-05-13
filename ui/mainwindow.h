@@ -1,6 +1,8 @@
 #ifndef MAIN_WINDOW_H
 #define MAIN_WINDOW_H
 
+#include <emulator.h>
+
 #include <QMainWindow>
 
 #include <memory>
@@ -28,6 +30,7 @@ private:
 private:
     std::unique_ptr<DebugWindow> m_debugWindow;
     std::unique_ptr<RenderWidget> m_renderWidget;
+    Emulator m_emu;
 };
 
 #endif // MAIN_WINDOW_H

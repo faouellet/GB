@@ -43,6 +43,11 @@ void MainWindow::About()
 void MainWindow::Open()
 {
     QString filename = QFileDialog::getOpenFileName(this);
+    if(!m_emu.LoadCartridge(filename.toStdString()))
+    {
+        QMessageBox::critical(this, tr("Error"),
+                              tr("Problem loading ROM file"));
+    }
 }
 
 void MainWindow::OpenDebugWindow()
@@ -53,5 +58,5 @@ void MainWindow::OpenDebugWindow()
 
 void MainWindow::Play()
 {
-
+    m_emu.Play();
 }
