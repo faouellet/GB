@@ -52,13 +52,16 @@ private:
 
     // ALU operations
     template <typename TOp, typename TFlagSetter, typename... TFlagHandlers>
-    void ExecuteALU(uint8_t val, TOp&& op, TFlagSetter&& flagSetter, TFlagHandlers&&... handlers);
+    void ExecuteBinaryALU(uint8_t val, TOp&& op, TFlagSetter&& flagSet, TFlagHandlers&&... handlers);
 
     template <typename TOp, typename TFlagSetter, typename... TFlagHandlers>
-    void ExecuteALU(RegisterMask reg, TOp&& op, TFlagSetter&& flagSetter, TFlagHandlers&&... handlers);
+    void ExecuteBinaryALU(RegisterMask reg, TOp&& op, TFlagSetter&& flagSet, TFlagHandlers&&... handlers);
 
     template <typename TOp, typename TFlagSetter, typename... TFlagHandlers>
-    void ExecuteALU(TOp&& op, TFlagSetter&& flagSetter, TFlagHandlers&&... handlers);
+    void ExecuteBinaryALU(TOp&& op, TFlagSetter&& flagSet, TFlagHandlers&&... handlers);
+
+    template <typename TOp, typename TFlagSetter, typename... TFlagHandlers>
+    void ExecuteUnaryALU(RegisterMask reg, TOp&& op, TFlagSetter&& flagSet, TFlagHandlers&&... handlers);
 
     // Stack pointer manipulation
     template <uint16_t Reg>
@@ -145,7 +148,7 @@ constexpr uint16_t CPU::GetMemAddr(uint8_t reg)
 }
 
 template <typename TOp, typename TFlagSetter, typename... TFlagHandlers>
-void CPU::ExecuteALU(uint8_t val, TOp&& op, TFlagSetter&& flagSetter, TFlagHandlers&&... handlers)
+void CPU::ExecuteBinaryALU(uint8_t val, TOp&& op, TFlagSetter&& flagSet, TFlagHandlers&&... handlers)
 {
     static_assert(std::is_invocable_v<TOp, uint8_t, uint8_t>, "Incorrect ALU operation");
     static_assert(std::is_invocable_v<TFlagSetter>, "Incorrect flag setter");
@@ -159,14 +162,14 @@ void CPU::ExecuteALU(uint8_t val, TOp&& op, TFlagSetter&& flagSetter, TFlagHandl
     m_GPRegs[m_FLAG_REGISTER_IDX] |= (result == 0 ? 0b10000000 : 0);
 
     // Unconditional flag setting
-    flagSetter();
+    flagSet();
 
     // Conditional flag setting
     (handlers(lhsVal, val), ...);
 }
 
 template <typename TOp, typename TFlagSetter, typename... TFlagHandlers>
-void CPU::ExecuteALU(RegisterMask reg, TOp&& op, TFlagSetter&& flagSetter, TFlagHandlers&&... handlers)
+void CPU::ExecuteBinaryALU(RegisterMask reg, TOp&& op, TFlagSetter&& flagSet, TFlagHandlers&&... handlers)
 {
     const uint8_t regBits = static_cast<std::underlying_type_t<RegisterMask>>(reg);
     unsigned int nbBitsSet = GetNbSetBits(regBits);
@@ -176,18 +179,53 @@ void CPU::ExecuteALU(RegisterMask reg, TOp&& op, TFlagSetter&& flagSetter, TFlag
         const uint8_t regIdx = GetSetBitPosition(static_cast<std::underlying_type_t<RegisterMask>>(reg));
         assert(regIdx < m_NB_REGISTERS && "Invalid register");
 
-        ExecuteALU(m_GPRegs[regIdx], op, flagSetter, handlers...);
+        ExecuteBinaryALU(m_GPRegs[regIdx], op, flagSet, handlers...);
     }
     else
     {
-        ExecuteALU(m_mem.Read(GetMemAddr(regBits)), op, flagSetter, handlers...);
+        ExecuteBinaryALU(m_mem.Read(GetMemAddr(regBits)), op, flagSet, handlers...);
     }
 }
 
 template <typename TOp, typename TFlagSetter, typename... TFlagHandlers>
-void CPU::ExecuteALU(TOp&& op, TFlagSetter&& flagSetter, TFlagHandlers&&... handlers)
+void CPU::ExecuteBinaryALU(TOp&& op, TFlagSetter&& flagSet, TFlagHandlers&&... handlers)
 {
-    ExecuteALU(m_mem.Read(m_PC++), op, flagSetter, handlers...);
+    ExecuteBinaryALU(m_mem.Read(m_PC++), op, flagSet, handlers...);
+}
+
+template <typename TOp, typename TFlagSetter, typename... TFlagHandlers>
+void CPU::ExecuteUnaryALU(RegisterMask reg, TOp&& op, TFlagSetter&& flagSet, TFlagHandlers&&... handlers)
+{
+    static_assert(std::is_invocable_v<TOp, uint8_t>, "Incorrect ALU operation");
+    static_assert(std::is_invocable_v<TFlagSetter>, "Incorrect flag setter");
+
+    const uint8_t regBits = static_cast<std::underlying_type_t<RegisterMask>>(reg);
+    unsigned int nbBitsSet = GetNbSetBits(regBits);
+
+    uint8_t result{};
+    if (nbBitsSet == 1)
+    {
+        const uint8_t regIdx = GetSetBitPosition(static_cast<std::underlying_type_t<RegisterMask>>(reg));
+        assert(regIdx < m_NB_REGISTERS && "Invalid register");
+
+        result = op(m_GPRegs[regIdx]);
+        m_GPRegs[regIdx] = result;
+    }
+    else
+    {
+        const uint16_t memAddr = GetMemAddr(regBits);
+        result = op(m_mem.Read(memAddr));
+        m_mem.Write(memAddr, result);
+    }
+    
+    // Set zero flag if result is 0
+    m_GPRegs[m_FLAG_REGISTER_IDX] |= (result == 0 ? 0b10000000 : 0);
+
+    // Unconditional flag setting
+    flagSet();
+
+    // Conditional flag setting
+    //(handlers(lhsVal, val), ...);
 }
 
 template <uint16_t Reg>

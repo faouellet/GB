@@ -34,6 +34,9 @@ void CPU::ExecuteNextInstruction()
         return lhs - (rhs + m_GPRegs[m_FLAG_REGISTER_IDX]);
     };
 
+    auto DEC = [](uint8_t val){ return --val; };
+    auto INC = [](uint8_t val){ return ++val; };
+
     uint8_t opcode = m_mem.Read(m_PC++);
     
     switch(opcode)
@@ -42,16 +45,16 @@ void CPU::ExecuteNextInstruction()
         case 0x01: [](){}; break;
         case 0x02: LD<Reg(BC), Reg(A)>(); break;
         case 0x03: [](){}; break;
-        case 0x04: [](){}; break;
-        case 0x05: [](){}; break;
+        case 0x04: ExecuteUnaryALU(RegisterMask::B, INC, resetFlags(Flag(N)), setCarryFlags); break;
+        case 0x05: ExecuteUnaryALU(RegisterMask::B, DEC, setFlags(Flag(N)), setCarryFlags); break;
         case 0x06: LD<Reg(B)>(); break;
         case 0x07: [](){}; break;
         case 0x08: [](){}; break;
         case 0x09: [](){}; break;
         case 0x0A: LD<Reg(A), Reg(BC)>(); break;
         case 0x0B: [](){}; break;
-        case 0x0C: [](){}; break;
-        case 0x0D: [](){}; break;
+        case 0x0C: ExecuteUnaryALU(RegisterMask::C, INC, resetFlags(Flag(N)), setCarryFlags); break;
+        case 0x0D: ExecuteUnaryALU(RegisterMask::C, DEC, setFlags(Flag(N)), setCarryFlags); break;
         case 0x0E: LD<Reg(C)>(); break;
         case 0x0F: [](){}; break;
 
@@ -59,16 +62,16 @@ void CPU::ExecuteNextInstruction()
         case 0x11: [](){}; break;
         case 0x12: LD<Reg(DE), Reg(A)>(); break;
         case 0x13: [](){}; break;
-        case 0x14: [](){}; break;
-        case 0x15: [](){}; break;
+        case 0x14: ExecuteUnaryALU(RegisterMask::D, INC, resetFlags(Flag(N)), setCarryFlags); break;
+        case 0x15: ExecuteUnaryALU(RegisterMask::D, DEC, setFlags(Flag(N)), setCarryFlags); break;
         case 0x16: LD<Reg(D)>(); break;
         case 0x17: [](){}; break;
         case 0x18: [](){}; break;
         case 0x19: [](){}; break;
         case 0x1A: LD<Reg(A), Reg(DE)>(); break;
         case 0x1B: [](){}; break;
-        case 0x1C: [](){}; break;
-        case 0x1D: [](){}; break;
+        case 0x1C: ExecuteUnaryALU(RegisterMask::E, INC, resetFlags(Flag(N)), setCarryFlags); break;
+        case 0x1D: ExecuteUnaryALU(RegisterMask::E, DEC, setFlags(Flag(N)), setCarryFlags); break;
         case 0x1E: LD<Reg(E)>(); break;
         case 0x1F: [](){}; break;
 
@@ -76,16 +79,16 @@ void CPU::ExecuteNextInstruction()
         case 0x21: [](){}; break;
         case 0x22: [](){}; break;
         case 0x23: [](){}; break;
-        case 0x24: [](){}; break;
-        case 0x25: [](){}; break;
+        case 0x24: ExecuteUnaryALU(RegisterMask::H, INC, resetFlags(Flag(N)), setCarryFlags); break;
+        case 0x25: ExecuteUnaryALU(RegisterMask::H, DEC, setFlags(Flag(N)), setCarryFlags); break;
         case 0x26: LD<Reg(H)>(); break;
         case 0x27: [](){}; break;
         case 0x28: [](){}; break;
         case 0x29: [](){}; break;
         case 0x2A: [](){}; break;
         case 0x2B: [](){}; break;
-        case 0x2C: [](){}; break;
-        case 0x2D: [](){}; break;
+        case 0x2C: ExecuteUnaryALU(RegisterMask::L, INC, resetFlags(Flag(N)), setCarryFlags); break;
+        case 0x2D: ExecuteUnaryALU(RegisterMask::L, DEC, setFlags(Flag(N)), setCarryFlags); break;
         case 0x2E: LD<Reg(L)>(); break;
         case 0x2F: [](){}; break;
 
@@ -101,8 +104,8 @@ void CPU::ExecuteNextInstruction()
         case 0x39: [](){}; break;
         case 0x3A: [](){}; break;
         case 0x3B: [](){}; break;
-        case 0x3C: [](){}; break;
-        case 0x3D: [](){}; break;
+        case 0x3C: ExecuteUnaryALU(RegisterMask::A, INC, resetFlags(Flag(N)), setCarryFlags); break;
+        case 0x3D: ExecuteUnaryALU(RegisterMask::A, DEC, setFlags(Flag(N)), setCarryFlags); break;
         case 0x3E: LD<Reg(A)>(); break;
         case 0x3F: [](){}; break;
 
@@ -187,74 +190,74 @@ void CPU::ExecuteNextInstruction()
         case 0x7F: LD<Reg(A), Reg(A)>(); break;
     
         // ADD
-        case 0x80: ExecuteALU(RegisterMask::B, std::plus<uint8_t>{}, resetFlags(Flag(N)), setCarryFlags); break;
-        case 0x81: ExecuteALU(RegisterMask::C, std::plus<uint8_t>{}, resetFlags(Flag(N)), setCarryFlags); break;
-        case 0x82: ExecuteALU(RegisterMask::D, std::plus<uint8_t>{}, resetFlags(Flag(N)), setCarryFlags); break;
-        case 0x83: ExecuteALU(RegisterMask::E, std::plus<uint8_t>{}, resetFlags(Flag(N)), setCarryFlags); break;
-        case 0x84: ExecuteALU(RegisterMask::H, std::plus<uint8_t>{}, resetFlags(Flag(N)), setCarryFlags); break;
-        case 0x85: ExecuteALU(RegisterMask::L, std::plus<uint8_t>{}, resetFlags(Flag(N)), setCarryFlags); break;
-        case 0x86: ExecuteALU(RegisterMask::HL, std::plus<uint8_t>{}, resetFlags(Flag(N)), setCarryFlags); break;
-        case 0x87: ExecuteALU(RegisterMask::A, std::plus<uint8_t>{}, resetFlags(Flag(N)), setCarryFlags); break;
+        case 0x80: ExecuteBinaryALU(RegisterMask::B, std::plus<uint8_t>{}, resetFlags(Flag(N)), setCarryFlags); break;
+        case 0x81: ExecuteBinaryALU(RegisterMask::C, std::plus<uint8_t>{}, resetFlags(Flag(N)), setCarryFlags); break;
+        case 0x82: ExecuteBinaryALU(RegisterMask::D, std::plus<uint8_t>{}, resetFlags(Flag(N)), setCarryFlags); break;
+        case 0x83: ExecuteBinaryALU(RegisterMask::E, std::plus<uint8_t>{}, resetFlags(Flag(N)), setCarryFlags); break;
+        case 0x84: ExecuteBinaryALU(RegisterMask::H, std::plus<uint8_t>{}, resetFlags(Flag(N)), setCarryFlags); break;
+        case 0x85: ExecuteBinaryALU(RegisterMask::L, std::plus<uint8_t>{}, resetFlags(Flag(N)), setCarryFlags); break;
+        case 0x86: ExecuteBinaryALU(RegisterMask::HL, std::plus<uint8_t>{}, resetFlags(Flag(N)), setCarryFlags); break;
+        case 0x87: ExecuteBinaryALU(RegisterMask::A, std::plus<uint8_t>{}, resetFlags(Flag(N)), setCarryFlags); break;
 
         // ADC
-        case 0x88: ExecuteALU(RegisterMask::B, ADC, resetFlags(Flag(N)), setCarryFlags); break;
-        case 0x89: ExecuteALU(RegisterMask::C, ADC, resetFlags(Flag(N)), setCarryFlags); break;
-        case 0x8A: ExecuteALU(RegisterMask::D, ADC, resetFlags(Flag(N)), setCarryFlags); break;
-        case 0x8B: ExecuteALU(RegisterMask::E, ADC, resetFlags(Flag(N)), setCarryFlags); break;
-        case 0x8C: ExecuteALU(RegisterMask::H, ADC, resetFlags(Flag(N)), setCarryFlags); break;
-        case 0x8D: ExecuteALU(RegisterMask::L, ADC, resetFlags(Flag(N)), setCarryFlags); break;
-        case 0x8E: ExecuteALU(RegisterMask::HL, ADC, resetFlags(Flag(N)), setCarryFlags); break;
-        case 0x8F: ExecuteALU(RegisterMask::A, ADC, resetFlags(Flag(N)), setCarryFlags); break;
+        case 0x88: ExecuteBinaryALU(RegisterMask::B, ADC, resetFlags(Flag(N)), setCarryFlags); break;
+        case 0x89: ExecuteBinaryALU(RegisterMask::C, ADC, resetFlags(Flag(N)), setCarryFlags); break;
+        case 0x8A: ExecuteBinaryALU(RegisterMask::D, ADC, resetFlags(Flag(N)), setCarryFlags); break;
+        case 0x8B: ExecuteBinaryALU(RegisterMask::E, ADC, resetFlags(Flag(N)), setCarryFlags); break;
+        case 0x8C: ExecuteBinaryALU(RegisterMask::H, ADC, resetFlags(Flag(N)), setCarryFlags); break;
+        case 0x8D: ExecuteBinaryALU(RegisterMask::L, ADC, resetFlags(Flag(N)), setCarryFlags); break;
+        case 0x8E: ExecuteBinaryALU(RegisterMask::HL, ADC, resetFlags(Flag(N)), setCarryFlags); break;
+        case 0x8F: ExecuteBinaryALU(RegisterMask::A, ADC, resetFlags(Flag(N)), setCarryFlags); break;
     
         // SUB
-        case 0x90: ExecuteALU(RegisterMask::B, std::minus<uint8_t>{}, setFlags(Flag(N)), setCarryFlags); break;
-        case 0x91: ExecuteALU(RegisterMask::C, std::minus<uint8_t>{}, setFlags(Flag(N)), setCarryFlags); break;
-        case 0x92: ExecuteALU(RegisterMask::D, std::minus<uint8_t>{}, setFlags(Flag(N)), setCarryFlags); break;
-        case 0x93: ExecuteALU(RegisterMask::E, std::minus<uint8_t>{}, setFlags(Flag(N)), setCarryFlags); break;
-        case 0x94: ExecuteALU(RegisterMask::H, std::minus<uint8_t>{}, setFlags(Flag(N)), setCarryFlags); break;
-        case 0x95: ExecuteALU(RegisterMask::L, std::minus<uint8_t>{}, setFlags(Flag(N)), setCarryFlags); break;
-        case 0x96: ExecuteALU(RegisterMask::HL, std::minus<uint8_t>{}, setFlags(Flag(N)), setCarryFlags); break;
-        case 0x97: ExecuteALU(RegisterMask::A, std::minus<uint8_t>{}, setFlags(Flag(N)), setCarryFlags); break;
+        case 0x90: ExecuteBinaryALU(RegisterMask::B, std::minus<uint8_t>{}, setFlags(Flag(N)), setCarryFlags); break;
+        case 0x91: ExecuteBinaryALU(RegisterMask::C, std::minus<uint8_t>{}, setFlags(Flag(N)), setCarryFlags); break;
+        case 0x92: ExecuteBinaryALU(RegisterMask::D, std::minus<uint8_t>{}, setFlags(Flag(N)), setCarryFlags); break;
+        case 0x93: ExecuteBinaryALU(RegisterMask::E, std::minus<uint8_t>{}, setFlags(Flag(N)), setCarryFlags); break;
+        case 0x94: ExecuteBinaryALU(RegisterMask::H, std::minus<uint8_t>{}, setFlags(Flag(N)), setCarryFlags); break;
+        case 0x95: ExecuteBinaryALU(RegisterMask::L, std::minus<uint8_t>{}, setFlags(Flag(N)), setCarryFlags); break;
+        case 0x96: ExecuteBinaryALU(RegisterMask::HL, std::minus<uint8_t>{}, setFlags(Flag(N)), setCarryFlags); break;
+        case 0x97: ExecuteBinaryALU(RegisterMask::A, std::minus<uint8_t>{}, setFlags(Flag(N)), setCarryFlags); break;
 
         // SBC
-        case 0x98: ExecuteALU(RegisterMask::B, SBC, setFlags(Flag(N)), setCarryFlags); break;
-        case 0x99: ExecuteALU(RegisterMask::C, SBC, setFlags(Flag(N)), setCarryFlags); break;
-        case 0x9A: ExecuteALU(RegisterMask::D, SBC, setFlags(Flag(N)), setCarryFlags); break;
-        case 0x9B: ExecuteALU(RegisterMask::E, SBC, setFlags(Flag(N)), setCarryFlags); break;
-        case 0x9C: ExecuteALU(RegisterMask::H, SBC, setFlags(Flag(N)), setCarryFlags); break;
-        case 0x9D: ExecuteALU(RegisterMask::L, SBC, setFlags(Flag(N)), setCarryFlags); break;
-        case 0x9E: ExecuteALU(RegisterMask::HL, SBC, setFlags(Flag(N)), setCarryFlags); break;
-        case 0x9F: ExecuteALU(RegisterMask::A, SBC, setFlags(Flag(N)), setCarryFlags); break;
+        case 0x98: ExecuteBinaryALU(RegisterMask::B, SBC, setFlags(Flag(N)), setCarryFlags); break;
+        case 0x99: ExecuteBinaryALU(RegisterMask::C, SBC, setFlags(Flag(N)), setCarryFlags); break;
+        case 0x9A: ExecuteBinaryALU(RegisterMask::D, SBC, setFlags(Flag(N)), setCarryFlags); break;
+        case 0x9B: ExecuteBinaryALU(RegisterMask::E, SBC, setFlags(Flag(N)), setCarryFlags); break;
+        case 0x9C: ExecuteBinaryALU(RegisterMask::H, SBC, setFlags(Flag(N)), setCarryFlags); break;
+        case 0x9D: ExecuteBinaryALU(RegisterMask::L, SBC, setFlags(Flag(N)), setCarryFlags); break;
+        case 0x9E: ExecuteBinaryALU(RegisterMask::HL, SBC, setFlags(Flag(N)), setCarryFlags); break;
+        case 0x9F: ExecuteBinaryALU(RegisterMask::A, SBC, setFlags(Flag(N)), setCarryFlags); break;
 
         // AND
-        case 0xA0: ExecuteALU(RegisterMask::B, std::bit_and<uint8_t>{}, resetFlags(Flag(N) | ~Flag(H) | Flag(C))); break;
-        case 0xA1: ExecuteALU(RegisterMask::C, std::bit_and<uint8_t>{}, resetFlags(Flag(N) | ~Flag(H) | Flag(C))); break;
-        case 0xA2: ExecuteALU(RegisterMask::D, std::bit_and<uint8_t>{}, resetFlags(Flag(N) | ~Flag(H) | Flag(C))); break;
-        case 0xA3: ExecuteALU(RegisterMask::E, std::bit_and<uint8_t>{}, resetFlags(Flag(N) | ~Flag(H) | Flag(C))); break;
-        case 0xA4: ExecuteALU(RegisterMask::H, std::bit_and<uint8_t>{}, resetFlags(Flag(N) | ~Flag(H) | Flag(C))); break;
-        case 0xA5: ExecuteALU(RegisterMask::L, std::bit_and<uint8_t>{}, resetFlags(Flag(N) | ~Flag(H) | Flag(C))); break;
-        case 0xA6: ExecuteALU(RegisterMask::HL, std::bit_and<uint8_t>{}, resetFlags(Flag(N) | ~Flag(H) | Flag(C))); break;
-        case 0xA7: ExecuteALU(RegisterMask::A, std::bit_and<uint8_t>{}, resetFlags(Flag(N) | ~Flag(H) | Flag(C))); break;
+        case 0xA0: ExecuteBinaryALU(RegisterMask::B, std::bit_and<uint8_t>{}, resetFlags(Flag(N) | ~Flag(H) | Flag(C))); break;
+        case 0xA1: ExecuteBinaryALU(RegisterMask::C, std::bit_and<uint8_t>{}, resetFlags(Flag(N) | ~Flag(H) | Flag(C))); break;
+        case 0xA2: ExecuteBinaryALU(RegisterMask::D, std::bit_and<uint8_t>{}, resetFlags(Flag(N) | ~Flag(H) | Flag(C))); break;
+        case 0xA3: ExecuteBinaryALU(RegisterMask::E, std::bit_and<uint8_t>{}, resetFlags(Flag(N) | ~Flag(H) | Flag(C))); break;
+        case 0xA4: ExecuteBinaryALU(RegisterMask::H, std::bit_and<uint8_t>{}, resetFlags(Flag(N) | ~Flag(H) | Flag(C))); break;
+        case 0xA5: ExecuteBinaryALU(RegisterMask::L, std::bit_and<uint8_t>{}, resetFlags(Flag(N) | ~Flag(H) | Flag(C))); break;
+        case 0xA6: ExecuteBinaryALU(RegisterMask::HL, std::bit_and<uint8_t>{}, resetFlags(Flag(N) | ~Flag(H) | Flag(C))); break;
+        case 0xA7: ExecuteBinaryALU(RegisterMask::A, std::bit_and<uint8_t>{}, resetFlags(Flag(N) | ~Flag(H) | Flag(C))); break;
         
         // XOR
-        case 0xA8: ExecuteALU(RegisterMask::B, std::bit_xor<uint8_t>{}, resetFlags(Flag(N) | Flag(H) | Flag(C))); break;
-        case 0xA9: ExecuteALU(RegisterMask::C, std::bit_xor<uint8_t>{}, resetFlags(Flag(N) | Flag(H) | Flag(C))); break;
-        case 0xAA: ExecuteALU(RegisterMask::D, std::bit_xor<uint8_t>{}, resetFlags(Flag(N) | Flag(H) | Flag(C))); break;
-        case 0xAB: ExecuteALU(RegisterMask::E, std::bit_xor<uint8_t>{}, resetFlags(Flag(N) | Flag(H) | Flag(C))); break;
-        case 0xAC: ExecuteALU(RegisterMask::H, std::bit_xor<uint8_t>{}, resetFlags(Flag(N) | Flag(H) | Flag(C))); break;
-        case 0xAD: ExecuteALU(RegisterMask::L, std::bit_xor<uint8_t>{}, resetFlags(Flag(N) | Flag(H) | Flag(C))); break;
-        case 0xAE: ExecuteALU(RegisterMask::HL, std::bit_xor<uint8_t>{}, resetFlags(Flag(N) | Flag(H) | Flag(C))); break;
-        case 0xAF: ExecuteALU(RegisterMask::A, std::bit_xor<uint8_t>{}, resetFlags(Flag(N) | Flag(H) | Flag(C))); break;
+        case 0xA8: ExecuteBinaryALU(RegisterMask::B, std::bit_xor<uint8_t>{}, resetFlags(Flag(N) | Flag(H) | Flag(C))); break;
+        case 0xA9: ExecuteBinaryALU(RegisterMask::C, std::bit_xor<uint8_t>{}, resetFlags(Flag(N) | Flag(H) | Flag(C))); break;
+        case 0xAA: ExecuteBinaryALU(RegisterMask::D, std::bit_xor<uint8_t>{}, resetFlags(Flag(N) | Flag(H) | Flag(C))); break;
+        case 0xAB: ExecuteBinaryALU(RegisterMask::E, std::bit_xor<uint8_t>{}, resetFlags(Flag(N) | Flag(H) | Flag(C))); break;
+        case 0xAC: ExecuteBinaryALU(RegisterMask::H, std::bit_xor<uint8_t>{}, resetFlags(Flag(N) | Flag(H) | Flag(C))); break;
+        case 0xAD: ExecuteBinaryALU(RegisterMask::L, std::bit_xor<uint8_t>{}, resetFlags(Flag(N) | Flag(H) | Flag(C))); break;
+        case 0xAE: ExecuteBinaryALU(RegisterMask::HL, std::bit_xor<uint8_t>{}, resetFlags(Flag(N) | Flag(H) | Flag(C))); break;
+        case 0xAF: ExecuteBinaryALU(RegisterMask::A, std::bit_xor<uint8_t>{}, resetFlags(Flag(N) | Flag(H) | Flag(C))); break;
 
         // OR
-        case 0xB0: ExecuteALU(RegisterMask::B, std::bit_or<uint8_t>{}, resetFlags(Flag(N) | Flag(H) | Flag(C))); break;
-        case 0xB1: ExecuteALU(RegisterMask::C, std::bit_or<uint8_t>{}, resetFlags(Flag(N) | Flag(H) | Flag(C))); break;
-        case 0xB2: ExecuteALU(RegisterMask::D, std::bit_or<uint8_t>{}, resetFlags(Flag(N) | Flag(H) | Flag(C))); break;
-        case 0xB3: ExecuteALU(RegisterMask::E, std::bit_or<uint8_t>{}, resetFlags(Flag(N) | Flag(H) | Flag(C))); break;
-        case 0xB4: ExecuteALU(RegisterMask::H, std::bit_or<uint8_t>{}, resetFlags(Flag(N) | Flag(H) | Flag(C))); break;
-        case 0xB5: ExecuteALU(RegisterMask::L, std::bit_or<uint8_t>{}, resetFlags(Flag(N) | Flag(H) | Flag(C))); break;
-        case 0xB6: ExecuteALU(RegisterMask::HL, std::bit_or<uint8_t>{}, resetFlags(Flag(N) | Flag(H) | Flag(C))); break;
-        case 0xB7: ExecuteALU(RegisterMask::A, std::bit_or<uint8_t>{}, resetFlags(Flag(N) | Flag(H) | Flag(C))); break;
+        case 0xB0: ExecuteBinaryALU(RegisterMask::B, std::bit_or<uint8_t>{}, resetFlags(Flag(N) | Flag(H) | Flag(C))); break;
+        case 0xB1: ExecuteBinaryALU(RegisterMask::C, std::bit_or<uint8_t>{}, resetFlags(Flag(N) | Flag(H) | Flag(C))); break;
+        case 0xB2: ExecuteBinaryALU(RegisterMask::D, std::bit_or<uint8_t>{}, resetFlags(Flag(N) | Flag(H) | Flag(C))); break;
+        case 0xB3: ExecuteBinaryALU(RegisterMask::E, std::bit_or<uint8_t>{}, resetFlags(Flag(N) | Flag(H) | Flag(C))); break;
+        case 0xB4: ExecuteBinaryALU(RegisterMask::H, std::bit_or<uint8_t>{}, resetFlags(Flag(N) | Flag(H) | Flag(C))); break;
+        case 0xB5: ExecuteBinaryALU(RegisterMask::L, std::bit_or<uint8_t>{}, resetFlags(Flag(N) | Flag(H) | Flag(C))); break;
+        case 0xB6: ExecuteBinaryALU(RegisterMask::HL, std::bit_or<uint8_t>{}, resetFlags(Flag(N) | Flag(H) | Flag(C))); break;
+        case 0xB7: ExecuteBinaryALU(RegisterMask::A, std::bit_or<uint8_t>{}, resetFlags(Flag(N) | Flag(H) | Flag(C))); break;
 
         case 0xB8: [](){}; break;
         case 0xB9: [](){}; break;
