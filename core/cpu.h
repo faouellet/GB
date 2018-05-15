@@ -63,6 +63,11 @@ private:
     template <typename TOp, typename TFlagSetter, typename... TFlagHandlers>
     void ExecuteUnaryALU(RegisterMask reg, TOp&& op, TFlagSetter&& flagSet, TFlagHandlers&&... handlers);
 
+    // Bit operations
+    void ResetBits(uint8_t reg, uint8_t bitMask);
+    void SetBits(uint8_t reg, uint8_t bitMask);
+    void TestBit(uint8_t reg, uint8_t bitMask);
+
     // Stack pointer manipulation
     template <uint16_t Reg>
     void PUSH();
@@ -71,7 +76,8 @@ private:
     void POP();
 
     // Utility
-    constexpr uint16_t GetMemAddr(uint8_t reg);
+    constexpr uint16_t GetMemAddr(uint8_t reg) const;
+    
 
 private:
     static constexpr int m_NB_REGISTERS = 8;
@@ -125,28 +131,6 @@ void CPU::LD()
     }
 }
 
-constexpr uint16_t CPU::GetMemAddr(uint8_t reg)
-{
-    assert(GetNbSetBits(reg) <= 2);
-
-    uint16_t addr{};
-    uint8_t pos{};
-
-    while(reg != 0)
-    {
-        if(reg & 1)
-        {
-            addr <<= 8;
-            addr |= m_GPRegs[pos];
-        }
-
-        ++pos;
-        reg >>= 1;
-    }
-
-    return addr;
-}
-
 template <typename TOp, typename TFlagSetter, typename... TFlagHandlers>
 void CPU::ExecuteBinaryALU(uint8_t val, TOp&& op, TFlagSetter&& flagSet, TFlagHandlers&&... handlers)
 {
@@ -172,11 +156,11 @@ template <typename TOp, typename TFlagSetter, typename... TFlagHandlers>
 void CPU::ExecuteBinaryALU(RegisterMask reg, TOp&& op, TFlagSetter&& flagSet, TFlagHandlers&&... handlers)
 {
     const uint8_t regBits = static_cast<std::underlying_type_t<RegisterMask>>(reg);
-    unsigned int nbBitsSet = GetNbSetBits(regBits);
+    const unsigned int nbBitsSet = GetNbSetBits(regBits);
     
     if (nbBitsSet == 1)
     {
-        const uint8_t regIdx = GetSetBitPosition(static_cast<std::underlying_type_t<RegisterMask>>(reg));
+        const uint8_t regIdx = GetSetBitPosition(regBits);
         assert(regIdx < m_NB_REGISTERS && "Invalid register");
 
         ExecuteBinaryALU(m_GPRegs[regIdx], op, flagSet, handlers...);
@@ -200,12 +184,12 @@ void CPU::ExecuteUnaryALU(RegisterMask reg, TOp&& op, TFlagSetter&& flagSet, TFl
     static_assert(std::is_invocable_v<TFlagSetter>, "Incorrect flag setter");
 
     const uint8_t regBits = static_cast<std::underlying_type_t<RegisterMask>>(reg);
-    unsigned int nbBitsSet = GetNbSetBits(regBits);
+    const unsigned int nbBitsSet = GetNbSetBits(regBits);
 
     uint8_t result{};
     if (nbBitsSet == 1)
     {
-        const uint8_t regIdx = GetSetBitPosition(static_cast<std::underlying_type_t<RegisterMask>>(reg));
+        const uint8_t regIdx = GetSetBitPosition(regBits);
         assert(regIdx < m_NB_REGISTERS && "Invalid register");
 
         result = op(m_GPRegs[regIdx]);
